@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>
+        </title>
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
+        <link rel="stylesheet" href="my.css" />
+        <style>
+            /* App custom styles */
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.1.1/jquery.mobile-1.1.1.min.js">
+        </script>
+        <script src="my.js">
+        </script>
+		<script type="text/javascript">
+		$(document).ready(function() {
+			// Handler for .ready() called.
+			var url = "retrieveLastConversions";
+			$.get(url, { }, function(data){
+				var conversions = data.getElementsByTagName("conversion");
+				for (var j=0; j<conversions.length; j++) {
+					var timestamp = conversions[j].getElementsByTagName("timestamp")[0].childNodes[0].nodeValue;
+					var value = conversions[j].getElementsByTagName("value")[0].childNodes[0].nodeValue;
+					var operation = conversions[j].getElementsByTagName("operation")[0].childNodes[0].nodeValue;
+					var result = conversions[j].getElementsByTagName("result")[0].childNodes[0].nodeValue;
+					$("#"+"conversion"+String(j+1))[0].innerHTML = String(timestamp) + ": applying " + operation + " to " + value + ", the result is: " + result; 
+				}			
+			});
+		});
+		
+		// Checks if a field is a positive number
+		function isPositiveInteger(str) {
+			var pattern = "0123456789";
+			var i = 0;
+			do {
+				var pos = 0;
+				for (var j=0; j<pattern.length; j++)
+					if (str.charAt(i)==pattern.charAt(j)) {
+						pos = 1;
+						break;
+					}
+				i++
+			} while (pos==1 && i<str.length);
+			if (pos==0)
+				return false;
+			return true;
+		}
+		
+		// Checks if a field is a positive number
+		function isValidRomanNumber(str) {
+			str = str.toUpperCase();
+			var romanPattern = new Array('I','V', 'X', 'D', 'L', 'C', 'M'); // 
+			var i = 0;
+			do {
+				var pos = 0;
+				for (var j=0; j<romanPattern.length; j++)
+					if (str.charAt(i)==romanPattern[j]) {
+						pos = 1;
+						break;
+					}
+				i++
+			} while (pos==1 && i<str.length);
+			if (pos==0)
+				return false;
+			return true;
+		}
+		
+		function traducirDecimalARomano() {
+			var idField = $("#decimalNum")[0];
+			if (isPositiveInteger(idField.value)) {
+				var url = "convertDecimal2Roman?num=" + escape(idField.value);
+				$.get(url, { }, function(data){
+					parseMessage("romanNum", data);
+				});
+				
+				return true;
+			} else {
+				idField.value = "";
+				return false;
+			}
+		}
+		
+		function traducirRomanoADecimal() {
+			var idField = $("#romanNum")[0];
+			if (isValidRomanNumber(idField.value)) {
+				var url = "convertRoman2Decimal?num=" + escape(idField.value);
+				$.get(url, { }, function(data){
+					parseMessage("decimalNum", data);
+				});
+				return true;
+			} else {
+				idField.value = "";
+				return false;
+			}
+		}
+		
+				
+		function parseMessage(fieldID, data) {
+			//alert("$(data).find('message'): " + $(data).find("message"));
+			var message = data.getElementsByTagName("message")[0];
+			//var message = data("message")[0];
+			messageStr = message.childNodes[0].nodeValue;
+			if (messageStr.substr(0,5).trim() === "ERROR") {
+				setMessage(fieldID, "");
+			} else {
+				setMessage(fieldID, messageStr);
+				var conversions = data.getElementsByTagName("conversion");
+				for (var j=0; j<conversions.length; j++) {
+					var timestamp = conversions[j].getElementsByTagName("timestamp")[0].childNodes[0].nodeValue;
+					var value = conversions[j].getElementsByTagName("value")[0].childNodes[0].nodeValue;
+					var operation = conversions[j].getElementsByTagName("operation")[0].childNodes[0].nodeValue;
+					var result = conversions[j].getElementsByTagName("result")[0].childNodes[0].nodeValue;
+					$("#"+"conversion"+String(j+1))[0].innerHTML = String(timestamp) + ": applying " + operation + " to " + value + ", the result is: " + result; 
+				}
+			}
+		}
+		
+		
+		function clearTextBoxDecimal() {
+			var decimalNumTxtBox = $("#decimalNum")[0];
+			if (decimalNumTxtBox.value.indexOf("-- Introduce un n") != -1) {
+				decimalNumTxtBox.value="";
+			}
+		}
+		
+		function clearTextBoxRoman() {
+			var decimalNumTxtBox = $("#romanNum")[0];
+			if (decimalNumTxtBox.value.indexOf("-- Introduce un n") != -1) {
+				decimalNumTxtBox.value="";
+			}
+		}
+
+
+		
+		function setMessage(fieldID, message) {
+			var responseElement = $("#"+fieldID)[0];
+			responseElement.value = message;
+		}
+	</script>
+    </head>
+    <body>
+        <!-- Home -->
+        <div data-role="page" id="page1">
+            <div id="Conversor: Arab2Roman" data-theme="a" data-role="header">
+                <h3 id="title">
+                    Conversor: Arab2Roman
+                </h3>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="decimalNum">
+                            Decimal number
+                        </label>
+                        <input name="" id="decimalNum" placeholder=""  type="text" 
+						
+						value ="-- Introduce un n&uacute;mero decimal --"
+						onfocus="clearTextBoxDecimal()"
+						onkeyup="traducirDecimalARomano();"
+						
+						/>
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="romanNum">
+                            Roman number
+                        </label>
+                        <input name="" id="romanNum" placeholder="" type="text" 
+							value="-- Introduce un n&uacute;mero romano --"
+							onfocus="clearTextBoxRoman()"
+							onkeyup="traducirRomanoADecimal();"
+						
+						/>
+                    </fieldset>
+                </div>
+				<ul data-role="listview" data-divider-theme="b" data-inset="true">
+                    <li data-role="list-divider" role="heading">
+                        Latest Conversions
+                    </li>
+                    <li data-theme="c">
+                        <span id="conversion1"></span>
+                    </li>
+                    <li data-theme="c">
+                        <span id="conversion2"></span>
+                    </li>
+                    <li data-theme="c">
+                        <span id="conversion3"></span>
+                    </li>
+                </ul>
+				<div data-theme="a" data-role="footer" data-position="fixed">
+					<h3>
+						Copyright @dipina
+					</h3>
+				</div>
+            </div>
+        </div>
+        <script>
+            //App custom javascript
+        </script>
+    </body>
+</html>

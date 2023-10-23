@@ -1,0 +1,160 @@
+<html>
+<head><title>AJAX Test</title>
+	<script type="text/javascript">
+		var req;
+		
+		// Checks if a field is a positive number
+		function isPositiveInteger(str) {
+			var pattern = "0123456789";
+			var i = 0;
+			do {
+				var pos = 0;
+				for (var j=0; j<pattern.length; j++)
+					if (str.charAt(i)==pattern.charAt(j)) {
+						pos = 1;
+						break;
+					}
+				i++
+			} while (pos==1 && i<str.length);
+			if (pos==0)
+				return false;
+			return true;
+		}
+		
+		// Checks if a field is a positive number
+		function isValidRomanNumber(str) {
+			str = str.toUpperCase();
+			var romanPattern = new Array('I','V', 'X', 'D', 'L', 'C', 'M'); // 
+			var i = 0;
+			do {
+				var pos = 0;
+				for (var j=0; j<romanPattern.length; j++)
+					if (str.charAt(i)==romanPattern[j]) {
+						pos = 1;
+						break;
+					}
+				i++
+			} while (pos==1 && i<str.length);
+			if (pos==0)
+				return false;
+			return true;
+		}
+		
+		function traducirDecimalARomano() {
+			var idField = document.getElementById("decimalNum");
+			if (isPositiveInteger(idField.value)) {
+				var url = "convertDecimal2Roman?num=" + escape(idField.value);
+				if (window.XMLHttpRequest) {
+					req = new XMLHttpRequest();
+				} else if (window.ActiveXObject) {
+					req = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				req.open("GET", url, true);
+				req.onreadystatechange = callback;
+				req.send(null);
+				return true;
+			} else {
+				idField.value = "";
+				return false;
+			}
+		}
+		
+		function traducirRomanoADecimal() {
+			var idField = document.getElementById("romanNum");
+			if (isValidRomanNumber(idField.value)) {
+				var url = "convertRoman2Decimal?num=" + escape(idField.value);
+				if (window.XMLHttpRequest) {
+					req = new XMLHttpRequest();
+				} else if (window.ActiveXObject) {
+					req = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				req.open("GET", url, true);
+				req.onreadystatechange = callback2;
+				req.send(null);
+				return true;
+			} else {
+				idField.value = "";
+				return false;
+			}
+		}
+		
+		function callback() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// update the HTML DOM based on whether or not message is valid
+					parseMessage("romanNum");
+				}
+			}
+		}
+		
+		function callback2() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// update the HTML DOM based on whether or not message is valid
+					parseMessage("decimalNum");
+				}
+			}
+		}
+		
+		function parseMessage(fieldID) {
+			var message = req.responseXML.getElementsByTagName("message")[0];
+			messageStr = message.childNodes[0].nodeValue;
+			if (messageStr.substr(0,5).trim() === "ERROR") {
+				alert(messageStr);
+				setMessage(fieldID, "");
+			} else {
+				setMessage(fieldID, messageStr);
+			}
+		}
+		
+		
+		function clearTextBoxDecimal() {
+			var decimalNumTxtBox = document.getElementById('decimalNum');
+			if (decimalNumTxtBox.value == "-- Introduce un número decimal --") {
+				decimalNumTxtBox.value="";
+			}
+		}
+		
+		function clearTextBoxRoman() {
+			var decimalNumTxtBox = document.getElementById('romanNum');
+			if (decimalNumTxtBox.value == "-- Introduce un número romano --") {
+				decimalNumTxtBox.value="";
+			}
+		}
+
+
+		
+		function setMessage(fieldID, message) {
+			var responseElement = document.getElementById(fieldID);
+			responseElement.value = message;
+		}
+	</script>
+</head>
+<body>
+ <div id="userIdMessage"></div>
+ <table>
+	<tr>
+		<form>
+		<td>
+			<input type="text"
+				size="30"  
+				id="decimalNum"
+				value ="-- Introduce un número decimal --"
+				onfocus="clearTextBoxDecimal()"
+				onkeyup="traducirDecimalARomano();">
+		</td>
+		<td>=</td>
+		<td>
+			<input type="text"
+				size="30"  
+				id="romanNum"
+				value="-- Introduce un número romano --"
+				onfocus="clearTextBoxRoman()"
+				onkeyup="traducirRomanoADecimal();">
+				
+		</td>
+		</form>
+  </table>
+</body>
+</html>
+

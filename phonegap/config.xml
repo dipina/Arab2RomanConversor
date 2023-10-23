@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<widget xmlns   = "http://www.w3.org/ns/widgets"
+    xmlns:gap   = "http://phonegap.com/ns/1.0"
+    id          = "com.phonegap.example"
+    versionCode = "10"
+    version     = "1.0.0" >
+
+<!-- versionCode is optional and Android only -->
+
+  <name>Arab2RomanConversor</name>
+
+  <description>
+      Converts roman numbers to arab and vice versa.
+  </description>
+
+  <author href="https://morelab.deusto.es" email="dipina@deusto.com">
+      Diego López-de-Ipiña
+  </author>
+
+  <gap:plugin name="cordova-plugin-whitelist" source="npm" />
+
+  
+	<content src="index.html" />
+	<access origin="*" />
+	<!--<plugin name="cordova-plugin-whitelist" spec="1" />-->
+
+
+	<allow-navigation href="http://*/*" />
+	<allow-intent href="https://*/*" />
+	<allow-intent href="http://*/*" />
+</widget>
