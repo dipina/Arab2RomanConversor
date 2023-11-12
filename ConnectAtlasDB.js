@@ -5,8 +5,9 @@ const app = express();
 
 app.use(express.json());
 
-const uri = 
-"mongodb+srv://conversions:conversions2022@cluster0.36o6n.mongodb.net/conversions?retryWrites=true&w=majority&useNewUrlParser=true&useUnifiedTopology=true";
+//const uri = "mongodb+srv://conversions:conversions2022@cluster0.36o6n.mongodb.net/conversions?retryWrites=true&w=majority&useNewUrlParser=true&useUnifiedTopology=true";
+const uri = "mongodb+srv://conversions:conversions2023@cluster0.czef0kv.mongodb.net/conversions?retryWrites=true&w=majority&useNewUrlParser=true&useUnifiedTopology=true";
+//const uri = "mongodb://conversions:conversions2023@cluster0.czef0kv.mongodb.net:27017/conversions?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true"
 
 MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true})
     .then((db) => {

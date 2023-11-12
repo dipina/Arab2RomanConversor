@@ -4,7 +4,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "4.16.2",
-    "mongodb": "^2.2.36",
+    "mongodb": "^4.1.4",
     "mongoose": "^6.0.13"
   },
   "engines": {

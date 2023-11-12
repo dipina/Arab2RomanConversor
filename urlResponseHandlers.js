@@ -4,34 +4,50 @@
 **/
 
 var url = require("url");
-var MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ServerApiVersion } = require('mongodb');
+// const uri="mongodb://127.0.0.1:27017/conversions";
+const uri = "mongodb+srv://conversions:conversions2023@cluster0.czef0kv.mongodb.net/?retryWrites=true&w=majority";
 var conversionsXML = "";
 
-function retrieveConversions(response, responseText) {
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+function retrieveConversions(response, responseText, openConnection=true) {
 	var conversionsXMLTemp = "";
-	//const uri = "mongodb://conversions:conversions2022@cluster0-shard-00-00.36o6n.mongodb.net:27017,cluster0-shard-00-01.36o6n.mongodb.net:27017,cluster0-shard-00-02.36o6n.mongodb.net:27017/conversions?ssl=true&replicaSet=atlas-466e1q-shard-0&authSource=admin&retryWrites=true&w=majority";
-	// const uri="mongodb://127.0.0.1:27017/conversions";
-	const uri="mongodb+srv://conversions:conversions2022@cluster0.36o6n.mongodb.net/?retryWrites=true&w=majority";
 	
-	MongoClient.connect(uri, function(err, db) {
-	//MongoClient.connect(uri, function(err, db) {
-	//MongoClient.connect("mongodb://conversions:conversions2021@cluster0-shard-00-00.36o6n.mongodb.net:27017,cluster0-shard-00-01.36o6n.mongodb.net:27017,cluster0-shard-00-02.36o6n.mongodb.net:27017/conversions?ssl=true&replicaSet=atlas-466e1q-shard-0&authSource=admin&retryWrites=true&w=majority", function(err, db) {
-		if(err) throw err;
-		
-		var collection = db.collection('conversions');
-		
-		// Locate all the entries using find
-		conversionsXMLTemp = "<conversions>";
-		collection.find().sort({timestamp: -1}).limit(3).toArray(function(err, results) {
-			console.dir(results);
-			if (results != undefined) {
-				results.forEach(function (doc) {
-					console.log("Aplying to %s: %s the operation %s we obtain %s.", doc.timestamp, doc.value, doc.operation, doc.result);
-					conversionsXMLTemp += ("<conversion><timestamp>" + String(doc.timestamp) + "</timestamp><value>" + String(doc.value) + "</value><operation>" + String(doc.operation) + "</operation><result>" + String(doc.result) + "</result></conversion>");
-				});
+	async function run() {
+		if (openConnection) {
+			await client.connect();
+		}
+		try {
+			// Get the database and collection on which to run the operation
+			const database = client.db("conversions");
+			const conversions = database.collection("conversions");
+			// Query for conversions that have a runtime less than 15 minutes
+			const query = { };
+			const options = {
+				// Sort returned documents in descending order by timestamp, i.e. the latest ones
+				sort: { timestamp: -1 },
+				// Include only the `username`, `operation`, `value` and `result` of each returned document
+				projection: { _id: 0, username: 1, operation: 1, value: 1, result: 1, timestamp: 1 },
+			};
+			conversionsXMLTemp = "<conversions>";
+			// Execute query 
+			const cursor = conversions.find(query, options).limit(3);
+			// Print a message if no documents were found
+			if ((await conversions.countDocuments(query)) === 0) {
+				console.log("No documents found!");
 			}
-			// Let's close the db
-			db.close();
+			// Print returned documents
+			for await (const doc of cursor) {
+				console.dir(doc);
+				conversionsXMLTemp += ("<conversion><timestamp>" + String(doc.timestamp) + "</timestamp><value>" + String(doc.value) + "</value><operation>" + String(doc.operation) + "</operation><result>" + String(doc.result) + "</result></conversion>");
+			}
 			conversionsXMLTemp += "</conversions>";
 			conversionsXML = conversionsXMLTemp;
 			console.log("*****" + conversionsXML);
@@ -40,8 +56,13 @@ function retrieveConversions(response, responseText) {
 			console.log("***Response: '" + content);
 			response.write(content);
 			response.end();
-		});	
-	});
+		} finally {
+			if (openConnection) {
+				await client.close();
+			}
+		}
+	}
+	run().catch(console.dir);
 }
 
 function save2DB(user, op, val, resu, response, responseText) {
@@ -49,28 +70,28 @@ function save2DB(user, op, val, resu, response, responseText) {
 	var ts = Math.round(date.getTime() / 1000) + date.getTimezoneOffset() * 60;
 	var idConversion = "conversion" + String(ts);
 
-	//const uri = "mongodb://conversions:conversions2022@cluster0-shard-00-00.36o6n.mongodb.net:27017,cluster0-shard-00-01.36o6n.mongodb.net:27017,cluster0-shard-00-02.36o6n.mongodb.net:27017/conversions?ssl=true&replicaSet=atlas-466e1q-shard-0&authSource=admin&retryWrites=true&w=majority";
-	const uri="mongodb+srv://conversions:conversions2022@cluster0.36o6n.mongodb.net/?retryWrites=true&w=majority";
+	async function run() {
+		// Connect the client to the server	(optional starting in v4.7)
+	    await client.connect();
+		try {
+			// Connect to the "insertDB" database and access its "haiku" collection
+			const database = client.db("conversions");
+			const conversions = database.collection("conversions");
 
-	MongoClient.connect(uri, function(err, db) {
-	//MongoClient.connect(uri, function(err, db) {
-	//MongoClient.connect("mongodb://conversions:conversions2021@cluster0-shard-00-00.36o6n.mongodb.net:27017,cluster0-shard-00-01.36o6n.mongodb.net:27017,cluster0-shard-00-02.36o6n.mongodb.net:27017/conversions?ssl=true&replicaSet=atlas-466e1q-shard-0&authSource=admin&retryWrites=true&w=majority", function(err, db) {
-
-		
-	
-		if(err) throw err;
-
-		db.collection('conversions').insert({_id: idConversion, username: user, operation: op, value: val, result: resu, timestamp: ts }, {w:1}, function(err, objects) {
-			if (err) console.warn(err.message);
-			if (err && err.message.indexOf('E11000 ') !== -1) {
-				// this _id was already inserted in the database
-				console.log("Error produced: " + err);
-			} else {
-				console.log("Informaci�n guardada: " + err);
-				retrieveConversions(response, responseText);
-			}
-		});
-	});
+			// Create a document to insert
+			const doc = {_id: idConversion, username: user, operation: op, value: val, result: resu, timestamp: ts };
+			// Insert the defined document into the "haiku" collection
+			const result = await conversions.insertOne(doc);
+			// Print the ID of the inserted document
+			console.log(`A document was inserted with the _id: ${result.insertedId}`);
+			retrieveConversions(response, responseText, false);
+		} finally {
+			// Close the MongoDB client connection
+			//await client.close();
+		}
+	}
+	// Run the function and handle any errors
+	run().catch(console.dir);
 }
 
 
