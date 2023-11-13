@@ -10,3 +10,9 @@
 1. Arrancar MongoDB: mongod --dbpath data\db
 2. Arranco la app: node index.js (aseguraros de ejecutar primera vez npm install)
 3. Accedo al navegador en: http://localhost:3000
+
+Go to https://cloud.mongodb.com/
+Create there the database that you can publish for free on the Cloud
+
+Go to Render https://render.com/
+Create a new Web Service, by simply completing the provided form
