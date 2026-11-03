@@ -1,0 +1,17 @@
+{
+  "id": "arab2roman",
+  "name": "Arab2Roman Converter",
+  "short_name": "Arab2Roman",
+  "description": "Convert between decimal and Roman numerals – works offline",
+  "lang": "en-GB",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7a1f1f",
+  "icons": [
+    { "src": "images/Arab2RomanConverter-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "images/Arab2RomanConverter-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "images/Arab2RomanConverter-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
